@@ -3,7 +3,8 @@ use std::io::{BufRead, BufReader};
 
 fn main() {
     let input = read_input("input/real.txt");
-    println!("Result: {}", sum_score(input));
+    println!("Result A: {}", sum_score(&input));
+    println!("Result B: {}", sum_score2(&input));
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -11,6 +12,33 @@ enum Shape {
     Rock = 1,
     Paper = 2,
     Scissors = 3,
+}
+
+impl Shape {
+    fn get_winning_shape(&self) -> Self {
+        match self {
+            Shape::Rock => Shape::Paper,
+            Shape::Paper => Shape::Scissors,
+            Shape::Scissors => Shape::Rock,
+        }
+    }
+
+    fn get_losing_shape(&self) -> Self {
+        match self {
+            Shape::Rock => Shape::Scissors,
+            Shape::Paper => Shape::Rock,
+            Shape::Scissors => Shape::Paper,
+        }
+    }
+
+    fn get_planned_shape(&self, s: &str) -> Self {
+        match s {
+            "X" => self.get_losing_shape(),
+            "Y" => *self,
+            "Z" => self.get_winning_shape(),
+            _ => panic!("Invalid input"),
+        }
+    }
 }
 
 impl From<&str> for Shape {
@@ -24,10 +52,21 @@ impl From<&str> for Shape {
     }
 }
 
-fn sum_score(lines: Vec<String>) -> i32 {
+fn sum_score(lines: &[String]) -> i32 {
+    lines
+        .iter()
+        .map(|line| (Shape::from(&line[0..1]), Shape::from(&line[2..3])))
+        .map(score)
+        .sum()
+}
+
+fn sum_score2(lines: &[String]) -> i32 {
     lines
         .into_iter()
-        .map(|line| (Shape::from(&line[0..1]), Shape::from(&line[2..3])))
+        .map(|line| {
+            let elf_shape = Shape::from(&line[0..1]);
+            (elf_shape, elf_shape.get_planned_shape(&line[2..3]))
+        })
         .map(score)
         .sum()
 }
@@ -53,11 +92,17 @@ fn read_input(file_name: &str) -> Vec<String> {
 
 #[cfg(test)]
 mod test {
-    use crate::{read_input, sum_score};
+    use crate::{read_input, sum_score, sum_score2};
 
     #[test]
     fn test_sum_score() {
         let input = read_input("input/test1.txt");
-        assert_eq!(sum_score(input), 15);
+        assert_eq!(sum_score(&input), 15);
+    }
+
+    #[test]
+    fn test_sum_score2() {
+        let input = read_input("input/test1.txt");
+        assert_eq!(sum_score2(&input), 12);
     }
 }

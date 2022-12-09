@@ -5,15 +5,17 @@ use std::io::{BufRead, BufReader};
 fn main() {
     let input = read_input("input/real1.txt");
     let chars: Vec<char> = input[0].chars().collect();
-    let value = get_start(chars);
+    let value = get_start(&chars, 4);
     println!("A: {value}");
+    let value = get_start(&chars, 14);
+    println!("B: {value}");
 }
 
-fn get_start(chars: Vec<char>) -> usize {
-    for (i, window) in chars.windows(4).enumerate() {
+fn get_start(chars: &[char], size: usize) -> usize {
+    for (i, window) in chars.windows(size).enumerate() {
         let set: HashSet<char> = window.iter().copied().collect();
-        if set.len() == 4 {
-            return i + 4;
+        if set.len() == size {
+            return i + size;
         }
     }
     0
